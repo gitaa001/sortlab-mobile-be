@@ -25,7 +25,19 @@ authRouter.post("/register", async (req, res) => {
     }
   });
 
-  if (error) return res.status(400).json({ message: error.message });
+  if (error) {
+    // Handle specific error messages
+    if (error.message.toLowerCase().includes("already registered") || 
+        error.message.toLowerCase().includes("already been registered") ||
+        error.message.toLowerCase().includes("user already exists")) {
+      return res.status(409).json({ message: "Email is already registered. Please use a different email or login." });
+    }
+    return res.status(400).json({ message: error.message });
+  }
+
+  if (data.user && data.user.identities && data.user.identities.length === 0) {
+    return res.status(409).json({ message: "Email is already registered. Please use a different email or login." });
+  }
 
   // Jika email confirmation ON, session bisa null
   return res.status(201).json({
