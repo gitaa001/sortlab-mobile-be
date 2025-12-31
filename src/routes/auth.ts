@@ -59,7 +59,21 @@ authRouter.post("/login", async (req, res) => {
   const { email, password } = parsed.data;
 
   const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-  if (error) return res.status(401).json({ message: error.message });
+  
+  if (error) {
+    // Handle specific error messages
+    if (error.message.toLowerCase().includes("email not confirmed")) {
+      return res.status(401).json({ 
+        message: "Please verify your email first. Check your inbox for the confirmation link." 
+      });
+    }
+    if (error.message.toLowerCase().includes("invalid login credentials")) {
+      return res.status(401).json({ 
+        message: "Invalid email or password." 
+      });
+    }
+    return res.status(401).json({ message: error.message });
+  }
 
   return res.json({
     access_token: data.session?.access_token,
